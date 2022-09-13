@@ -8,6 +8,12 @@ at the moment, this is a purely data/visual trick — the pads are held in memor
 
 for now, this is just a toy, but it's my first working standalone .exe file, so that was really the goal here.
 
+# how to use
+
+just download the repo and inside of the dist folder there is a "main.exe" file.
+
+the dist folder seems rather bloated, which seems unnecessary since i went into this project with the goal of using the bare minimum amount of external modules/functions etc.. im going to see what i can do to fix that.
+
 
 # known issues i am looking to fix
 
