@@ -10,6 +10,8 @@ at the moment, this is a purely data/visual trick — the pads are held in memor
 
 for now, this is just a toy, but it's my first working standalone .exe file, so that was really the goal here.
 
+![image](https://user-images.githubusercontent.com/79169638/199065140-1d4ad44d-5964-4295-b959-7ac36bef4ae7.png)
+
 # how to use
 
 just download the repo and inside of the dist folder there is a "main.exe" file. before you run it, make sure your mkii minilab is plugged into the computer.
