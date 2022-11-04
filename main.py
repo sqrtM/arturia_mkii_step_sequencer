@@ -1,10 +1,19 @@
 import mido
 import time
 
+
 from tkinter import *
 from tkinter import messagebox
 
 from threading import *
+
+from pythonosc.udp_client import SimpleUDPClient
+ip = "127.0.0.1"
+port = 1337
+
+client = SimpleUDPClient(ip, port)
+
+
 
 hexoffset = 112 
 # arturia minilab mkii pad addresses
@@ -17,23 +26,6 @@ noteoffset = 36
 # may not be the case, and if you are having problems getting the
 # sequencer to run as intended, this is the most likely problem.
 
-n_length = 16 # CURRENTLY SET TO EIGHTH NOTES
-# n_length (note length) is how fast the sequencer tics.
-# - set automatically by the pulser interval.
-
-# haven't been able to get 64nt and above 
-# or 2n and below to work with this set up yet
-# (i'm sure it's possible, as my design here is very... hokey.)
-# all other note lengths should work fine, though!
-
-if n_length == 8:
-    n_length += 8
-if n_length == 7:
-    n_length += 5
-if n_length == 6:
-    n_length += 2
-if n_length == 5:
-    n_length += 1
    
 # this number, c_length (cycle length), is how many pads
 # you would like the sequencer to use, between 2 and 16
@@ -149,11 +141,6 @@ def on_note(incoming_midi):
             return padmem
 
 
-# Perhaps take this and make it a tkinter menu ? 
-# Just in case the user has an odd port configuration
-outport = mido.open_output('Arturia MiniLab mkII 1')
-inport = mido.open_input('Arturia MiniLab mkII 0', callback=on_note)
-
 
 
 def refresh():
@@ -198,6 +185,7 @@ def loop():
 # tick keeps track of what all the lights are doing
 def tick(beat):
     global active_mem
+    client.send_message("/mkii_seq", str(padmem)) 
     hit = beat
     lastpos = hit - 1
     if lastpos < 0:
@@ -282,7 +270,7 @@ def tick(beat):
 
 ws = Tk()
 ws.title("MKII SEQUENCER")
-ws.geometry('470x400')
+ws.geometry('470x470')
 
 frame1 = LabelFrame(ws, text='Color 1')
 frame1.grid(row=1, column=1, padx=5)
@@ -508,12 +496,28 @@ Radiobutton(frame5, text='White', variable=group_5, value=8).pack()
 
 for x in range (1,14):
     Radiobutton(frame6, text=x+3, variable=group_6, value=x).pack()
+    
+selected_midi_input = StringVar(value = mido.get_input_names()[0] )
+selected_midi_output = StringVar(value = mido.get_output_names()[1] )
+miditarget = StringVar(value = mido.get_output_names()[0] )
+ 
+ddin = OptionMenu(ws, selected_midi_input, *mido.get_input_names())
+ddin.grid(row=2, column=1, columnspan=3)
+
+ddout = OptionMenu(ws, selected_midi_output, *mido.get_output_names())
+ddout.grid(row=3, column=1, columnspan=3)
+
+miditarget = OptionMenu(ws, miditarget, *mido.get_output_names())
+miditarget.grid(row=4, column=1, columnspan=3)
 
 btn = Button(ws, text = 'Start', bd = '10', command = onButtonPress)
-btn.grid(row=3, column=3)
+btn.grid(row=3, column=4)
 
 btn = Button(ws, text = 'Silence', bd = '10', command = onSilence)
-btn.grid(row=3, column=4)
+btn.grid(row=3, column=5)
+
+outport = mido.open_output(selected_midi_output.get())
+inport = mido.open_input(selected_midi_input.get(), callback=on_note)
 
 
 if __name__ == '__main__':
