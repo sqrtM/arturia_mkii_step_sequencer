@@ -1,7 +1,6 @@
 import mido
 import time
 
-
 from tkinter import *
 from tkinter import messagebox
 
@@ -10,7 +9,6 @@ from threading import *
 from pythonosc.udp_client import SimpleUDPClient
 ip = "127.0.0.1"
 port = 1337
-
 client = SimpleUDPClient(ip, port)
 
 
@@ -50,8 +48,6 @@ padmem = [[int(0)] * c_length for _ in range(membanks)]
 active_mem = 0
 # active_mem is the 1D memory line you are currently looking at
 # this is switched with the bank switchers, if c_length is less than 15.
-
-
 
 # these values designate the colors for
 # when the pad is "on", "off", "seqon", 
@@ -141,8 +137,6 @@ def on_note(incoming_midi):
             return padmem
 
 
-
-
 def refresh():
     for x in range(16 - c_length):
         if x <= membanks:
@@ -180,12 +174,24 @@ def loop():
             beat += 1
         else:
             beat = 0
+        # TEMPO. WE WILL MAKE 
+        # THIS ACTUALLY USEFUL SOON
         time.sleep(0.5)
+
+def create_binary_signal(arr):
+    newarr = arr
+    for nestedarr in newarr:
+        for member in nestedarr:
+            if member > 1:
+                member = "1"
+            else: 
+                member = "0"
+    return newarr
 
 # tick keeps track of what all the lights are doing
 def tick(beat):
     global active_mem
-    client.send_message("/mkii_seq", str(padmem)) 
+    client.send_message(f"/mkii_seq/{active_mem}", str(padmem)) 
     hit = beat
     lastpos = hit - 1
     if lastpos < 0:
@@ -252,9 +258,7 @@ def tick(beat):
         sysmsg[-1] = offcolor
         outgoing_sysex = mido.Message('sysex', data= sysmsg)
         outport.send(outgoing_sysex)  
-        
-        
-        
+   
 ###########################################
 #   ________      ___  ___      ___       #
 #  |\   ____\    |\  \|\  \    |\  \      #
@@ -266,25 +270,23 @@ def tick(beat):
 #                                         #
 ###########################################
 
-
-
 ws = Tk()
 ws.title("MKII SEQUENCER")
 ws.geometry('470x470')
 
-frame1 = LabelFrame(ws, text='Color 1')
+frame1 = LabelFrame(ws, text='Default')
 frame1.grid(row=1, column=1, padx=5)
 
-frame2 = LabelFrame(ws, text='Color 2')
+frame2 = LabelFrame(ws, text='Beat')
 frame2.grid(row=1, column=2, padx=5)
 
-frame3 = LabelFrame(ws, text='Color 3')
+frame3 = LabelFrame(ws, text='Sequencing')
 frame3.grid(row=1, column=3, padx=5)
 
-frame4 = LabelFrame(ws, text='Color 4')
+frame4 = LabelFrame(ws, text='Active')
 frame4.grid(row=1, column=4, padx=5)
 
-frame5 = LabelFrame(ws, text='Color 5')
+frame5 = LabelFrame(ws, text='Bank')
 frame5.grid(row=1, column=5, padx=5)
 
 frame6 = LabelFrame(ws, text='Pads Used')
@@ -437,12 +439,12 @@ def onSilence():
     refresh()
     return
         
-group_1 = IntVar()
-group_2 = IntVar()
-group_3 = IntVar() 
-group_4 = IntVar() 
-group_5 = IntVar() 
-group_6 = IntVar() 
+group_1 = IntVar(value=6)
+group_2 = IntVar(value=7)
+group_3 = IntVar(value=8) 
+group_4 = IntVar(value=3) 
+group_5 = IntVar(value=5) 
+group_6 = IntVar(value=5) 
 
 # offcolor
 Radiobutton(frame1, text='None', variable=group_1, value=1).pack()
@@ -518,6 +520,8 @@ btn.grid(row=3, column=5)
 
 outport = mido.open_output(selected_midi_output.get())
 inport = mido.open_input(selected_midi_input.get(), callback=on_note)
+
+
 
 
 if __name__ == '__main__':
