@@ -528,7 +528,9 @@ def get_bg(int):
         case 2: 
             return 'light green'
         
-
+# visuals don't work if you switch pad lengths during a performance,
+# fix this (probably in the silence function, or by adding it as an
+# argument)
 def refresh_visuals():
     for i, _ in enumerate(padmem):
         for j, _ in enumerate(padmem[i]):
