@@ -270,7 +270,7 @@ def tick(beat):
 
 ws = Tk()
 ws.title("MKII SEQUENCER")
-ws.geometry('470x470')
+ws.geometry('800x680')
 
 frame1 = LabelFrame(ws, text='Default')
 frame1.grid(row=1, column=1, padx=5)
@@ -519,22 +519,26 @@ btn.grid(row=3, column=5)
 outport = mido.open_output(selected_midi_output.get())
 inport = mido.open_input(selected_midi_input.get(), callback=on_note)
 
-def get_bg(int):
-    match (int):
+def get_bg(value, b):
+    global beat
+    match (value):
         case 0:
             return 'cyan'
         case 1:
             return 'pink'
         case 2: 
-            return 'light green'
-        
+            return 'white' if b == beat else 'light green'
+                
 # visuals don't work if you switch pad lengths during a performance,
 # fix this (probably in the silence function, or by adding it as an
 # argument)
 def refresh_visuals():
     for i, _ in enumerate(padmem):
         for j, _ in enumerate(padmem[i]):
-            Label(ws, text='@', padx=4, background=get_bg(padmem[i][j])).grid(row=i + 6, column=j + 7)
+            Label(ws, text='# # ', padx=4, background=get_bg(padmem[i][j], j)).grid(row=i + 6, column=j + 7)
+
+for i, _ in enumerate(padmem):
+    Button(ws, text = 'test').grid(row=i+6, column=len(padmem)+7)
 
 
 if __name__ == '__main__':
