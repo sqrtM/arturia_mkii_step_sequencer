@@ -170,6 +170,7 @@ def loop():
     global beat
     while KILLSWITCH == True:
         tick(beat)
+        refresh_visuals()
         if beat < c_length - 1:
             beat += 1
         else:
@@ -211,9 +212,6 @@ def tick(beat):
             sysmsg[-1] = offcolor
             outgoing_sysex = mido.Message('sysex', data= sysmsg)
             outport.send(outgoing_sysex)
-            refresh_visuals()
-
-            
         if padmem[active_mem][pad] == 1 & padmem[active_mem][hit] != 1:
             paddec = pad + hexoffset
             padhex = int(hex(paddec), 16)
@@ -221,10 +219,7 @@ def tick(beat):
             sysmsg[-2] = padhex
             sysmsg[-1] = offcolor
             outgoing_sysex = mido.Message('sysex', data= sysmsg)
-            outport.send(outgoing_sysex)
-            refresh_visuals()
-
-                
+            outport.send(outgoing_sysex)        
         if padmem[active_mem][pad] == 2:
             paddec = pad + hexoffset
             padhex = int(hex(paddec), 16)
@@ -232,7 +227,6 @@ def tick(beat):
             sysmsg[-1] = seqoff
             outgoing_sysex = mido.Message('sysex', data= sysmsg)
             outport.send(outgoing_sysex)   
-            refresh_visuals()
     
     
     # reads the status of the pads and
@@ -242,16 +236,13 @@ def tick(beat):
         sysmsg[-1] = seqon
         outgoing_sysex = mido.Message('sysex', data= sysmsg)
         outport.send(outgoing_sysex)  
-        refresh_visuals()
         
     else:
         padmem[active_mem][hit] = 1 
         sysmsg[-2] = hexseqpos   
         sysmsg[-1] = oncolor
         outgoing_sysex = mido.Message('sysex', data= sysmsg)
-        outport.send(outgoing_sysex)  
-        refresh_visuals()
-    
+        outport.send(outgoing_sysex)      
     if padmem[active_mem][lastpos] == 2:
         sysmsg[-2] = hexseqpos           # genuinely no idea why this works
         sysmsg[-1] = oncolor             # i mean, shouldn't these first two
@@ -259,14 +250,12 @@ def tick(beat):
         sysmsg[-1] = seqoff              # script doesn't work w/o them....
         outgoing_sysex = mido.Message('sysex', data= sysmsg)
         outport.send(outgoing_sysex)  
-        refresh_visuals()
     else:
         padmem[active_mem][lastpos] = 0
         sysmsg[-2] = oldhexpos
         sysmsg[-1] = offcolor
         outgoing_sysex = mido.Message('sysex', data= sysmsg)
         outport.send(outgoing_sysex) 
-        refresh_visuals() 
     
 ###########################################
 #   ________      ___  ___      ___       #
