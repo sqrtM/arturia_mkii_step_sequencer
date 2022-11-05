@@ -170,7 +170,7 @@ def loop():
     global beat
     while KILLSWITCH == True:
         tick(beat)
-        refresh_visuals()
+        #refresh_visuals()
         if beat < c_length - 1:
             beat += 1
         else:
@@ -178,21 +178,22 @@ def loop():
         # TEMPO. WE WILL MAKE 
         # THIS ACTUALLY USEFUL SOON
         time.sleep(0.5)
-
-def create_binary_signal(arr):
-    newarr = arr
-    for nestedarr in newarr:
-        for member in nestedarr:
-            if member > 1:
-                member = "1"
-            else: 
-                member = "0"
-    return newarr
+        
+def build_message(memarr):
+    message = []
+    totalindex = 0
+    for i in range(c_length):
+        for j in range(len(memarr[i])):
+            totalindex += 1
+            if padmem[i][j] == 2: 
+                message.append(totalindex)
+    return message
 
 # tick keeps track of what all the lights are doing
 def tick(beat):
     global active_mem
-    client.send_message(f"/mkii_seq/{active_mem}", str(padmem)) 
+    msg = build_message(padmem)
+    client.send_message(f"/mkii_seq/{active_mem}", msg) 
     hit = beat
     lastpos = hit - 1
     if lastpos < 0:
@@ -270,7 +271,7 @@ def tick(beat):
 
 ws = Tk()
 ws.title("MKII SEQUENCER")
-ws.geometry('800x680')
+ws.geometry('470x470')
 
 frame1 = LabelFrame(ws, text='Default')
 frame1.grid(row=1, column=1, padx=5)
@@ -519,27 +520,26 @@ btn.grid(row=3, column=5)
 outport = mido.open_output(selected_midi_output.get())
 inport = mido.open_input(selected_midi_input.get(), callback=on_note)
 
-def get_bg(value, b):
-    global beat
-    match (value):
-        case 0:
-            return 'cyan'
-        case 1:
-            return 'pink'
-        case 2: 
-            return 'white' if b == beat else 'light green'
+#def get_bg(int, b):
+#    global beat
+#    match (int):
+#        case 0:
+#            return 'cyan'
+#        case 1:
+#            return 'pink'
+#        case 2: 
+#            return 'white' if b == beat else 'light green'
                 
 # visuals don't work if you switch pad lengths during a performance,
 # fix this (probably in the silence function, or by adding it as an
 # argument)
-def refresh_visuals():
-    for i, _ in enumerate(padmem):
-        for j, _ in enumerate(padmem[i]):
-            Label(ws, text='# # ', padx=4, background=get_bg(padmem[i][j], j)).grid(row=i + 6, column=j + 7)
+#def refresh_visuals():
+#    for i, _ in enumerate(padmem):
+#        for j, _ in enumerate(padmem[i]):
+#            Label(ws, text='# # ', padx=4, background=get_bg(padmem[i][j], j)).grid(row=i + 6, column=j + 7)
 
-for i, _ in enumerate(padmem):
-    Button(ws, text = 'test').grid(row=i+6, column=len(padmem)+7)
-
+#for i, _ in enumerate(padmem):
+#    Button(ws, text = 'test').grid(row=i+6, column=len(padmem)+7)
 
 if __name__ == '__main__':
     ws.mainloop()
