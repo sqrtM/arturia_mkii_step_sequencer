@@ -1,6 +1,10 @@
 import mido
 import time
 
+import rich
+from rich.table import Table
+
+
 from tkinter import *
 from tkinter import messagebox
 
@@ -135,7 +139,19 @@ def on_note(incoming_midi):
             outgoing_sysex = mido.Message('sysex', data= sysmsg)
             outport.send(outgoing_sysex)
             return padmem
+    
+#ok, so the goal is that we can visually represent this array with
+#the console since tkinter is so fucking slow with visual updates.
+#we have the array, but we want to color it properly and have it
+#update in real time, not "re-send" the data each time.
 
+strarray = map(str, padmem)
+listedarray = list(strarray)
+table = Table(show_lines=True)
+for i in zip(listedarray):
+    table.add_column(*i)
+for i in zip(*listedarray):
+    table.add_row(*i)
 
 def refresh():
     for x in range(16 - c_length):
@@ -155,12 +171,14 @@ def refresh():
     outgoing_sysex = mido.Message('sysex', data= sysmsg)
     outport.send(outgoing_sysex)
     tick(beat)
-    print("refreshed!", padmem)
+    rich.print(table)
+    
 
 # this initializes the lights for the bank switches
 # so they actually reflect the correct initial bank
 
 ############################################
+
 
 beat = 0
 KILLSWITCH = True
