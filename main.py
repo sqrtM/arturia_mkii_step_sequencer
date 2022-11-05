@@ -4,7 +4,7 @@ import time
 from tkinter import *
 from tkinter import messagebox
 
-from threading import *
+import threading as threading
 
 from pythonosc.udp_client import SimpleUDPClient
 ip = "127.0.0.1"
@@ -211,6 +211,8 @@ def tick(beat):
             sysmsg[-1] = offcolor
             outgoing_sysex = mido.Message('sysex', data= sysmsg)
             outport.send(outgoing_sysex)
+            refresh_visuals()
+
             
         if padmem[active_mem][pad] == 1 & padmem[active_mem][hit] != 1:
             paddec = pad + hexoffset
@@ -220,6 +222,8 @@ def tick(beat):
             sysmsg[-1] = offcolor
             outgoing_sysex = mido.Message('sysex', data= sysmsg)
             outport.send(outgoing_sysex)
+            refresh_visuals()
+
                 
         if padmem[active_mem][pad] == 2:
             paddec = pad + hexoffset
@@ -228,6 +232,7 @@ def tick(beat):
             sysmsg[-1] = seqoff
             outgoing_sysex = mido.Message('sysex', data= sysmsg)
             outport.send(outgoing_sysex)   
+            refresh_visuals()
     
     
     # reads the status of the pads and
@@ -237,6 +242,7 @@ def tick(beat):
         sysmsg[-1] = seqon
         outgoing_sysex = mido.Message('sysex', data= sysmsg)
         outport.send(outgoing_sysex)  
+        refresh_visuals()
         
     else:
         padmem[active_mem][hit] = 1 
@@ -244,6 +250,7 @@ def tick(beat):
         sysmsg[-1] = oncolor
         outgoing_sysex = mido.Message('sysex', data= sysmsg)
         outport.send(outgoing_sysex)  
+        refresh_visuals()
     
     if padmem[active_mem][lastpos] == 2:
         sysmsg[-2] = hexseqpos           # genuinely no idea why this works
@@ -252,13 +259,15 @@ def tick(beat):
         sysmsg[-1] = seqoff              # script doesn't work w/o them....
         outgoing_sysex = mido.Message('sysex', data= sysmsg)
         outport.send(outgoing_sysex)  
+        refresh_visuals()
     else:
         padmem[active_mem][lastpos] = 0
         sysmsg[-2] = oldhexpos
         sysmsg[-1] = offcolor
         outgoing_sysex = mido.Message('sysex', data= sysmsg)
-        outport.send(outgoing_sysex)  
-   
+        outport.send(outgoing_sysex) 
+        refresh_visuals() 
+    
 ###########################################
 #   ________      ___  ___      ___       #
 #  |\   ____\    |\  \|\  \    |\  \      #
@@ -429,7 +438,7 @@ def onButtonPress():
     if looping == 0:
         looping = 1
         KILLSWITCH = True
-        Thread(target=loop).start()
+        threading.Thread(target=loop).start()
         
 def onSilence():
     global KILLSWITCH
@@ -521,7 +530,20 @@ btn.grid(row=3, column=5)
 outport = mido.open_output(selected_midi_output.get())
 inport = mido.open_input(selected_midi_input.get(), callback=on_note)
 
+def get_bg(int):
+    match (int):
+        case 0:
+            return 'cyan'
+        case 1:
+            return 'pink'
+        case 2: 
+            return 'light green'
+        
 
+def refresh_visuals():
+    for i, _ in enumerate(padmem):
+        for j, _ in enumerate(padmem[i]):
+            Label(ws, text='@', padx=4, background=get_bg(padmem[i][j])).grid(row=i + 6, column=j + 7)
 
 
 if __name__ == '__main__':
