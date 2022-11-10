@@ -1,21 +1,18 @@
-import mido
+import threading as threading
 import time
-
-import rich
-from rich.table import Table
-
-
-from tkinter import *
+import tkinter as tk
 from tkinter import messagebox
 
-import threading as threading
-
+import mido
 from pythonosc.udp_client import SimpleUDPClient
+
 ip = "127.0.0.1"
 port = 1337
 client = SimpleUDPClient(ip, port)
 
-
+from rich.live import Live as richlive
+from rich.table import Table as richtable
+from rich.text import Text as richtext
 
 hexoffset = 112 
 # arturia minilab mkii pad addresses
@@ -139,19 +136,6 @@ def on_note(incoming_midi):
             outgoing_sysex = mido.Message('sysex', data= sysmsg)
             outport.send(outgoing_sysex)
             return padmem
-    
-#ok, so the goal is that we can visually represent this array with
-#the console since tkinter is so fucking slow with visual updates.
-#we have the array, but we want to color it properly and have it
-#update in real time, not "re-send" the data each time.
-
-strarray = map(str, padmem)
-listedarray = list(strarray)
-table = Table(show_lines=True)
-for i in zip(listedarray):
-    table.add_column(*i)
-for i in zip(*listedarray):
-    table.add_row(*i)
 
 def refresh():
     for x in range(16 - c_length):
@@ -170,9 +154,7 @@ def refresh():
     sysmsg[-1] = bankcolor
     outgoing_sysex = mido.Message('sysex', data= sysmsg)
     outport.send(outgoing_sysex)
-    tick(beat)
-    rich.print(table)
-    
+    tick(beat)    
 
 # this initializes the lights for the bank switches
 # so they actually reflect the correct initial bank
@@ -183,20 +165,38 @@ def refresh():
 beat = 0
 KILLSWITCH = True
 
+def generate_sequencer(i: int, r: int, color: str, color2: str) -> richtable:
+    table = richtable()
+    table.add_column("seq", justify='center')
+    
+    padvisual = "●" * c_length
+    
+    i = i + 1
+    
+    if i > 0:
+        j = i - 1
+    else:
+        j = 0   
+    for _ in range(r):
+        text = richtext(padvisual)
+        text.stylize(color, 0, 16)
+        text.stylize(color2, j, i)
+        table.add_row(text)
+    return table
+
 # main loop. called onButtonPress
 def loop():
     global beat
-    while KILLSWITCH == True:
-        tick(beat)
-        #refresh_visuals()
-        if beat < c_length - 1:
-            beat += 1
-        else:
-            beat = 0
-        # TEMPO. WE WILL MAKE 
-        # THIS ACTUALLY USEFUL SOON
-        time.sleep(0.5)
-        
+    with richlive(generate_sequencer(beat, c_length, "bold cyan", "bold magenta"), refresh_per_second=4) as l:
+        while KILLSWITCH == True:
+            tick(beat)
+            if beat < c_length - 1:
+                beat += 1
+            else:
+                beat = 0
+            time.sleep(0.5)
+            l.update(generate_sequencer(beat, c_length, "bold cyan", "bold magenta"))
+
 def build_message(memarr):
     message = []
     totalindex = 0
@@ -287,26 +287,26 @@ def tick(beat):
 #                                         #
 ###########################################
 
-ws = Tk()
+ws = tk.Tk()
 ws.title("MKII SEQUENCER")
 ws.geometry('470x470')
 
-frame1 = LabelFrame(ws, text='Default')
+frame1 = tk.LabelFrame(ws, text='Default')
 frame1.grid(row=1, column=1, padx=5)
 
-frame2 = LabelFrame(ws, text='Beat')
+frame2 = tk.LabelFrame(ws, text='Beat')
 frame2.grid(row=1, column=2, padx=5)
 
-frame3 = LabelFrame(ws, text='Sequencing')
+frame3 = tk.LabelFrame(ws, text='Sequencing')
 frame3.grid(row=1, column=3, padx=5)
 
-frame4 = LabelFrame(ws, text='Active')
+frame4 = tk.LabelFrame(ws, text='Active')
 frame4.grid(row=1, column=4, padx=5)
 
-frame5 = LabelFrame(ws, text='Bank')
+frame5 = tk.LabelFrame(ws, text='Bank')
 frame5.grid(row=1, column=5, padx=5)
 
-frame6 = LabelFrame(ws, text='Pads Used')
+frame6 = tk.LabelFrame(ws, text='Pads Used')
 frame6.grid(row=1, column=6, padx=5)
 
 looping = 0
@@ -456,108 +456,87 @@ def onSilence():
     refresh()
     return
         
-group_1 = IntVar(value=6)
-group_2 = IntVar(value=7)
-group_3 = IntVar(value=8) 
-group_4 = IntVar(value=3) 
-group_5 = IntVar(value=5) 
-group_6 = IntVar(value=5) 
+group_1 = tk.IntVar(value=6)
+group_2 = tk.IntVar(value=7)
+group_3 = tk.IntVar(value=8) 
+group_4 = tk.IntVar(value=3) 
+group_5 = tk.IntVar(value=5) 
+group_6 = tk.IntVar(value=5) 
 
 # offcolor
-Radiobutton(frame1, text='None', variable=group_1, value=1).pack()
-Radiobutton(frame1, text='Red', variable=group_1, value=2).pack()
-Radiobutton(frame1, text='Green', variable=group_1, value=3).pack()
-Radiobutton(frame1, text='Yellow', variable=group_1, value=4).pack()
-Radiobutton(frame1, text='Blue', variable=group_1, value=5).pack()
-Radiobutton(frame1, text='Cyan', variable=group_1, value=6).pack()
-Radiobutton(frame1, text='Purple', variable=group_1, value=7).pack()
-Radiobutton(frame1, text='White', variable=group_1, value=8).pack()
+tk.Radiobutton(frame1, text='None', variable=group_1, value=1).pack()
+tk.Radiobutton(frame1, text='Red', variable=group_1, value=2).pack()
+tk.Radiobutton(frame1, text='Green', variable=group_1, value=3).pack()
+tk.Radiobutton(frame1, text='Yellow', variable=group_1, value=4).pack()
+tk.Radiobutton(frame1, text='Blue', variable=group_1, value=5).pack()
+tk.Radiobutton(frame1, text='Cyan', variable=group_1, value=6).pack()
+tk.Radiobutton(frame1, text='Purple', variable=group_1, value=7).pack()
+tk.Radiobutton(frame1, text='White', variable=group_1, value=8).pack()
 
 # oncolor
-Radiobutton(frame2, text='None', variable=group_2, value=1).pack()
-Radiobutton(frame2, text='Red', variable=group_2, value=2).pack()
-Radiobutton(frame2, text='Green', variable=group_2, value=3).pack()
-Radiobutton(frame2, text='Yellow', variable=group_2, value=4).pack()
-Radiobutton(frame2, text='Blue', variable=group_2, value=5).pack()
-Radiobutton(frame2, text='Cyan', variable=group_2, value=6).pack()
-Radiobutton(frame2, text='Purple', variable=group_2, value=7).pack()
-Radiobutton(frame2, text='White', variable=group_2, value=8).pack()
+tk.Radiobutton(frame2, text='None', variable=group_2, value=1).pack()
+tk.Radiobutton(frame2, text='Red', variable=group_2, value=2).pack()
+tk.Radiobutton(frame2, text='Green', variable=group_2, value=3).pack()
+tk.Radiobutton(frame2, text='Yellow', variable=group_2, value=4).pack()
+tk.Radiobutton(frame2, text='Blue', variable=group_2, value=5).pack()
+tk.Radiobutton(frame2, text='Cyan', variable=group_2, value=6).pack()
+tk.Radiobutton(frame2, text='Purple', variable=group_2, value=7).pack()
+tk.Radiobutton(frame2, text='White', variable=group_2, value=8).pack()
 
 # seqon
-Radiobutton(frame3, text='None', variable=group_3, value=1).pack()
-Radiobutton(frame3, text='Red', variable=group_3, value=2).pack()
-Radiobutton(frame3, text='Green', variable=group_3, value=3).pack()
-Radiobutton(frame3, text='Yellow', variable=group_3, value=4).pack()
-Radiobutton(frame3, text='Blue', variable=group_3, value=5).pack()
-Radiobutton(frame3, text='Cyan', variable=group_3, value=6).pack()
-Radiobutton(frame3, text='Purple', variable=group_3, value=7).pack()
-Radiobutton(frame3, text='White', variable=group_3, value=8).pack()
+tk.Radiobutton(frame3, text='None', variable=group_3, value=1).pack()
+tk.Radiobutton(frame3, text='Red', variable=group_3, value=2).pack()
+tk.Radiobutton(frame3, text='Green', variable=group_3, value=3).pack()
+tk.Radiobutton(frame3, text='Yellow', variable=group_3, value=4).pack()
+tk.Radiobutton(frame3, text='Blue', variable=group_3, value=5).pack()
+tk.Radiobutton(frame3, text='Cyan', variable=group_3, value=6).pack()
+tk.Radiobutton(frame3, text='Purple', variable=group_3, value=7).pack()
+tk.Radiobutton(frame3, text='White', variable=group_3, value=8).pack()
 
 # seqoff
-Radiobutton(frame4, text='None', variable=group_4, value=1).pack()
-Radiobutton(frame4, text='Red', variable=group_4, value=2).pack()
-Radiobutton(frame4, text='Green', variable=group_4, value=3).pack()
-Radiobutton(frame4, text='Yellow', variable=group_4, value=4).pack()
-Radiobutton(frame4, text='Blue', variable=group_4, value=5).pack()
-Radiobutton(frame4, text='Cyan', variable=group_4, value=6).pack()
-Radiobutton(frame4, text='Purple', variable=group_4, value=7).pack()
-Radiobutton(frame4, text='White', variable=group_4, value=8).pack()
+tk.Radiobutton(frame4, text='None', variable=group_4, value=1).pack()
+tk.Radiobutton(frame4, text='Red', variable=group_4, value=2).pack()
+tk.Radiobutton(frame4, text='Green', variable=group_4, value=3).pack()
+tk.Radiobutton(frame4, text='Yellow', variable=group_4, value=4).pack()
+tk.Radiobutton(frame4, text='Blue', variable=group_4, value=5).pack()
+tk.Radiobutton(frame4, text='Cyan', variable=group_4, value=6).pack()
+tk.Radiobutton(frame4, text='Purple', variable=group_4, value=7).pack()
+tk.Radiobutton(frame4, text='White', variable=group_4, value=8).pack()
 
 # bank
-Radiobutton(frame5, text='None', variable=group_5, value=1).pack()
-Radiobutton(frame5, text='Red', variable=group_5, value=2).pack()
-Radiobutton(frame5, text='Green', variable=group_5, value=3).pack()
-Radiobutton(frame5, text='Yellow', variable=group_5, value=4).pack()
-Radiobutton(frame5, text='Blue', variable=group_5, value=5).pack()
-Radiobutton(frame5, text='Cyan', variable=group_5, value=6).pack()
-Radiobutton(frame5, text='Purple', variable=group_5, value=7).pack()
-Radiobutton(frame5, text='White', variable=group_5, value=8).pack()
+tk.Radiobutton(frame5, text='None', variable=group_5, value=1).pack()
+tk.Radiobutton(frame5, text='Red', variable=group_5, value=2).pack()
+tk.Radiobutton(frame5, text='Green', variable=group_5, value=3).pack()
+tk.Radiobutton(frame5, text='Yellow', variable=group_5, value=4).pack()
+tk.Radiobutton(frame5, text='Blue', variable=group_5, value=5).pack()
+tk.Radiobutton(frame5, text='Cyan', variable=group_5, value=6).pack()
+tk.Radiobutton(frame5, text='Purple', variable=group_5, value=7).pack()
+tk.Radiobutton(frame5, text='White', variable=group_5, value=8).pack()
 
 for x in range (1,14):
-    Radiobutton(frame6, text=x+3, variable=group_6, value=x).pack()
+    tk.Radiobutton(frame6, text=x+3, variable=group_6, value=x).pack()
     
-selected_midi_input = StringVar(value = mido.get_input_names()[0] )
-selected_midi_output = StringVar(value = mido.get_output_names()[1] )
-miditarget = StringVar(value = mido.get_output_names()[0] )
+selected_midi_input = tk.StringVar(value = mido.get_input_names()[0] )  # type: ignore
+selected_midi_output = tk.StringVar(value = mido.get_output_names()[1] ) # type: ignore
+miditarget = tk.StringVar(value = mido.get_output_names()[0] ) # type: ignore
  
-ddin = OptionMenu(ws, selected_midi_input, *mido.get_input_names())
+ddin = tk.OptionMenu(ws, selected_midi_input, *mido.get_input_names()) # type: ignore
 ddin.grid(row=2, column=1, columnspan=3)
 
-ddout = OptionMenu(ws, selected_midi_output, *mido.get_output_names())
+ddout = tk.OptionMenu(ws, selected_midi_output, *mido.get_output_names()) # type: ignore
 ddout.grid(row=3, column=1, columnspan=3)
 
-miditarget = OptionMenu(ws, miditarget, *mido.get_output_names())
+miditarget = tk.OptionMenu(ws, miditarget, *mido.get_output_names()) # type: ignore
 miditarget.grid(row=4, column=1, columnspan=3)
 
-btn = Button(ws, text = 'Start', bd = '10', command = onButtonPress)
+btn = tk.Button(ws, text = 'Start', bd = '10', command = onButtonPress)
 btn.grid(row=3, column=4)
 
-btn = Button(ws, text = 'Silence', bd = '10', command = onSilence)
+btn = tk.Button(ws, text = 'Silence', bd = '10', command = onSilence)
 btn.grid(row=3, column=5)
 
-outport = mido.open_output(selected_midi_output.get())
-inport = mido.open_input(selected_midi_input.get(), callback=on_note)
-
-#def get_bg(int, b):
-#    global beat
-#    match (int):
-#        case 0:
-#            return 'cyan'
-#        case 1:
-#            return 'pink'
-#        case 2: 
-#            return 'white' if b == beat else 'light green'
-                
-# visuals don't work if you switch pad lengths during a performance,
-# fix this (probably in the silence function, or by adding it as an
-# argument)
-#def refresh_visuals():
-#    for i, _ in enumerate(padmem):
-#        for j, _ in enumerate(padmem[i]):
-#            Label(ws, text='# # ', padx=4, background=get_bg(padmem[i][j], j)).grid(row=i + 6, column=j + 7)
-
-#for i, _ in enumerate(padmem):
-#    Button(ws, text = 'test').grid(row=i+6, column=len(padmem)+7)
+outport = mido.open_output(selected_midi_output.get()) # type: ignore
+inport = mido.open_input(selected_midi_input.get(), callback=on_note) # type: ignore
 
 if __name__ == '__main__':
     ws.mainloop()
