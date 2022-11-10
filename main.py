@@ -165,9 +165,9 @@ def refresh():
 beat = 0
 KILLSWITCH = True
 
-def generate_sequencer(i: int, r: int, color: str, color2: str) -> richtable:
-    table = richtable()
-    table.add_column("seq", justify='center')
+def generate_sequencer(i: int, r: int, color: str, color2: str, color3: str, color4: str) -> richtable:
+    table = richtable(highlight=True)
+    table.add_column(f"beat {beat}", justify='center')
     
     padvisual = "●" * c_length
     
@@ -175,17 +175,34 @@ def generate_sequencer(i: int, r: int, color: str, color2: str) -> richtable:
     i = i + 1
     j = i - 1
     
-    for _ in range(r):
+    for row in range(r):
         text = richtext(padvisual)
-        text.stylize(color, 0, 16)
-        text.stylize(color2, j, i)
-        table.add_row(text)
+        if row == active_mem:
+            text.stylize("bold " + color, 0, 16)
+            text.stylize("bold " + color2, j, i)
+            for col in range(len(padmem[row])):
+                if padmem[row][col] == 2:
+                    if col == beat:
+                        text.stylize("bold " + color4, col, col + 1)
+                    else:
+                        text.stylize("bold " + color3, col, col + 1) 
+            table.add_row(text)
+        else:
+            text.stylize(color, 0, 16)
+            text.stylize(color2, j, i)
+            for col in range(len(padmem[row])):
+                if padmem[row][col] == 2:
+                    if col == beat:
+                        text.stylize(color4, col, col + 1)
+                    else:
+                        text.stylize(color3, col, col + 1) 
+            table.add_row(text)
     return table
 
 # main loop. called onButtonPress
 def loop():
     global beat
-    with richlive(generate_sequencer(beat, membanks, "bold cyan", "bold magenta"), refresh_per_second=4) as l:
+    with richlive(generate_sequencer(beat, membanks, "cyan", "magenta", "green", "white"), refresh_per_second=8) as l:
         while KILLSWITCH == True:
             tick(beat)
             if beat < c_length - 1:
@@ -193,13 +210,13 @@ def loop():
             else:
                 beat = 0
             time.sleep(0.5)
-            l.update(generate_sequencer(beat, membanks, "bold cyan", "bold magenta"))
+            l.update(generate_sequencer(beat, membanks, "cyan", "magenta", "green", "white"))
 
-def build_message(memarr):
+def build_message():
     message = []
     totalindex = 0
-    for i in range(c_length):
-        for j in range(len(memarr[i])):
+    for i in range(len(padmem)):
+        for j in range(c_length):
             totalindex += 1
             if padmem[i][j] == 2: 
                 message.append(totalindex)
@@ -208,7 +225,7 @@ def build_message(memarr):
 # tick keeps track of what all the lights are doing
 def tick(beat):
     global active_mem
-    msg = build_message(padmem)
+    msg = build_message()
     client.send_message(f"/mkii_seq/{active_mem}", msg) 
     hit = beat
     lastpos = hit - 1
