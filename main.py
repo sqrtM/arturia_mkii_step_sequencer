@@ -171,12 +171,10 @@ def generate_sequencer(i: int, r: int, color: str, color2: str) -> richtable:
     
     padvisual = "●" * c_length
     
+    #this normalizes the "beat" location
     i = i + 1
+    j = i - 1
     
-    if i > 0:
-        j = i - 1
-    else:
-        j = 0   
     for _ in range(r):
         text = richtext(padvisual)
         text.stylize(color, 0, 16)
@@ -187,7 +185,7 @@ def generate_sequencer(i: int, r: int, color: str, color2: str) -> richtable:
 # main loop. called onButtonPress
 def loop():
     global beat
-    with richlive(generate_sequencer(beat, c_length, "bold cyan", "bold magenta"), refresh_per_second=4) as l:
+    with richlive(generate_sequencer(beat, membanks, "bold cyan", "bold magenta"), refresh_per_second=4) as l:
         while KILLSWITCH == True:
             tick(beat)
             if beat < c_length - 1:
@@ -195,7 +193,7 @@ def loop():
             else:
                 beat = 0
             time.sleep(0.5)
-            l.update(generate_sequencer(beat, c_length, "bold cyan", "bold magenta"))
+            l.update(generate_sequencer(beat, membanks, "bold cyan", "bold magenta"))
 
 def build_message(memarr):
     message = []
