@@ -12,7 +12,7 @@ presently, this sequencer creates and sends signals, organized by signal bank. t
 
 for now, this is just mostly just a toy, but it's my first working standalone .exe file, and that was really the goal here.
 
-![image](https://user-images.githubusercontent.com/79169638/199065140-1d4ad44d-5964-4295-b959-7ac36bef4ae7.png)
+![image](https://user-images.githubusercontent.com/79169638/201188439-1bbfc3b3-92f9-48df-a266-18f98cd5683b.png)
 
 # how to use
 
@@ -27,7 +27,9 @@ if you set the pads to 16, it crashes. this is because second dimension of the m
 
 ~~i have this set to where it reads input 1 and output 0 for the mkii. this SHOULD work for basically any setup trying out this demo, but I'm certain this will cause problems in the future, and for the next version i'm going to just have it iterate through inputs and output until it finds "mkii" and then pick that one.~~ (this is now a tkinter menu)
 
-I am currently working on two interrelated things: getting a visualizer set up, and allowing the signals to move asyncronously. these are both important because, 1.) the user needs to be able to see HOW the signals interrelate rhythmically, and 2.) because a visualized UI allows for greater control over the signals. I spent a lot fo time putting this together in tkinter, and it worked like a charm (!) except the performance was horrifically bad (!) because tkinter isn't really made to do lots of updates like that, so I'm instead getting this set up to where it is visualized in the console using a library like Rich. one I can realiably draw everything to the screen, I'll start exporting the signals asyncronously.
+I am currently working on ~~two~~ interrelated things: ~~getting a visualizer set up, and~~ allowing the signals to move asyncronously. these are both important because, 1.) the user needs to be able to see HOW the signals interrelate rhythmically, and 2.) because a visualized UI allows for greater control over the signals. I spent a lot of time putting this together in tkinter, and it worked like a charm (!) except the performance was horrifically bad (!) because tkinter isn't really made to do lots of updates like that, ~~so I'm instead getting this set up to where it is visualized in the console using a library like Rich. one I can realiably draw everything to the screen, I'll start exporting the signals asyncronously.~~
+
+the visualizer now works pretty well and updates as you change your settings. neat!
 
 but for now, this does work as a rudimentary step sequencer, so long as you are happy with all of your banks being at the same tempo. not very useful at the moment!, but can be useful for things like livecoding and toggling visuals, which is something I do a lot of. so if you're also into that, maybe you can find some use in this early build.
 
