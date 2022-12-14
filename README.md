@@ -1,5 +1,8 @@
 # arturia minilab mkii step sequencer — v0.3
 
+QUICK NOTE: 
+I feel as though the more i add to this project, the more libraries I'm adding and the messier everything is getting (to be expected! this is an extension of the very first program I ever wrote! the fact that it still works and can be built upon (in a loose sense of the phrase) at all is remarkable). rather than continuing to patch over a lot of this stuff, I think I'm going to be completely rewriting this program in Java, since any GUI I create will be much less fussy and I can just use the standard library for most if not all of what I need. stay tuned for the java edition.
+
 i really like my minilab (the pads are a little fussy and the cc controls have the strangest velocity settings ive ever seen in my life, but still). its just that i never understood, with all of its weird and useless built in features, why it didn't have any kind of sequencer or scheduling. seemed like a no-brainer kind of thing to me. would be extremely useful for doing live-coding/live visuals stuff and would add basically no bloat to the machine. but since the minilab doesn't have anything like that i figured id try and build the functionality myself
 
 this is a rudimentary, proof-of-concept standalone version of the script i built for BespokeSynth which allowed you to use the pads of the arturia mkii minilab as a step sequencer with up to 64* pads.
