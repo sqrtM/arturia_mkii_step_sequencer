@@ -3,7 +3,7 @@
 ---------------------------------------------------------------------------------------------------------------------------
 
 QUICK NOTE: 
-I feel as though the more i add to this project, the more libraries I'm adding and the messier everything is getting (to be expected! this is an extension of the very first program I ever wrote! the fact that it still works and can be built upon (in a loose sense of the phrase) at all is remarkable). rather than continuing to patch over a lot of this stuff, I think I'm going to be completely rewriting this program in Java, since any GUI I create will be much less fussy and I can just use the standard library for most if not all of what I need. stay tuned for the java edition.
+I feel as though the more i add to this project, the more libraries I'm adding and the messier everything is getting (to be expected! this is an extension of the very first program I ever wrote! the fact that it still works and can be built upon (in a loose sense of the phrase) at all is remarkable). rather than continuing to patch over a lot of this stuff, I think I'm going to be completely rewriting this program in Java, since any GUI I create will be much less fussy and I can just use the standard library for most if not all of what I need. follow development here : https://github.com/sqrtM/MkiiStepSequencer_JavaEdition
 
 
 -----------------------------------------------------------------------------------------------------------------------------
